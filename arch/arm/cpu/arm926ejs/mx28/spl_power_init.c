@@ -657,17 +657,14 @@ void mx28_power_configure_power_source(void)
 
 	mx28_src_power_init();
 
-	batt_ready = mx28_is_batt_ready();
-
 	if (readl(&power_regs->hw_power_sts) & POWER_STS_VDD5V_GT_VDDIO) {
-		batt_good = mx28_is_batt_good();
+		batt_ready = mx28_is_batt_ready();
 		if (batt_ready) {
 			/* 5V source detected, good battery detected. */
 			mx28_batt_boot();
 		} else {
-			if (batt_good) {
-				/* 5V source detected, low battery detceted. */
-			} else {
+			batt_good = mx28_is_batt_good();
+			if (!batt_good) {
 				/* 5V source detected, bad battery detected. */
 				writel(LRADC_CONVERSION_AUTOMATIC,
 					&lradc_regs->hw_lradc_conversion_clr);
