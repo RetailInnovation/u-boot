@@ -273,9 +273,10 @@
  * Extra Environments
  */
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"mtdids=nand0=mtd0\0" \
+	"mtdparts=mtdparts=mtd0:512K(fcb),512K(dbbt),1M(u-boot-1),1M(u-boot-2),1M(env),-(rootfs)\0" \
 	"update_nand_full_filename=u-boot.nand\0" \
 	"update_nand_firmware_filename=u-boot.sb\0"	\
-	"update_sd_firmware_filename=u-boot.sd\0" \
 	"update_nand_firmware_maxsz=0x100000\0"	\
 	"update_nand_stride=0x40\0"	/* MX28 datasheet ch. 12.12 */ \
 	"update_nand_count=0x4\0"	/* MX28 datasheet ch. 12.12 */ \
@@ -303,34 +304,9 @@
 		"nand write ${loadaddr} ${fcb_sz} ${filesize} ; " \
 		"nand write ${loadaddr} ${fw_off} ${filesize} ; " \
 		"fi\0" \
-	"update_sd_firmware="		/* Update the SD firmware partition */ \
-		"if mmc rescan ; then "	\
-		"if tftp ${update_sd_firmware_filename} ; then " \
-		"setexpr fw_sz ${filesize} / 0x200 ; "	/* SD block size */ \
-		"setexpr fw_sz ${fw_sz} + 1 ; "	\
-		"mmc write ${loadaddr} 0x800 ${fw_sz} ; " \
-		"fi ; "	\
-		"fi\0" \
-	"script=boot.scr\0"	\
 	"uimage=uImage\0" \
-	"console_fsl=ttyAM0\0" \
-	"console_mainline=ttyAMA0\0" \
-	"mmcdev=0\0" \
-	"mmcpart=2\0" \
-	"mmcroot=/dev/mmcblk0p3 rw\0" \
-	"mmcrootfstype=ext3 rootwait\0"	\
-	"mmcargs=setenv bootargs console=${console_mainline},${baudrate} " \
-		"root=${mmcroot} " \
-		"rootfstype=${mmcrootfstype}\0"	\
-	"loadbootscript="  \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
-	"bootscript=echo Running bootscript from mmc ...; "	\
-		"source\0" \
-	"loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
-	"mmcboot=echo Booting from mmc ...; " \
-		"run mmcargs; "	\
-		"bootm\0" \
-	"netargs=setenv bootargs console=${console_mainline},${baudrate} " \
+	"console=ttyAM0\0" \
+	"netargs=setenv bootargs console=${console},${baudrate} " \
 		"root=/dev/nfs " \
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
 	"netboot=echo Booting from net ...; " \
