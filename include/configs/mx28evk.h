@@ -60,7 +60,6 @@
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_GPIO
 #define CONFIG_CMD_MII
-#define CONFIG_CMD_MMC
 #define CONFIG_CMD_NET
 #define CONFIG_CMD_NFS
 #define CONFIG_CMD_PING
@@ -69,6 +68,10 @@
 #define CONFIG_CMD_USB
 #define CONFIG_CMD_BOOTZ
 #define CONFIG_CMD_I2C
+#define CONFIG_CMD_NAND
+#define CONFIG_CMD_MTDPARTS
+#define CONFIG_CMD_UBI
+#define CONFIG_CMD_UBIFS
 
 /*
  * Memory configurations
@@ -133,7 +136,7 @@
 /*
  * MMC Driver
  */
-#define CONFIG_ENV_IS_IN_MMC
+#undef CONFIG_ENV_IS_IN_MMC
 #ifdef CONFIG_ENV_IS_IN_MMC
  #define CONFIG_ENV_OFFSET	(256 * 1024)
  #define CONFIG_ENV_SIZE	(16 * 1024)
@@ -150,11 +153,33 @@
 /*
  * NAND Driver
  */
+#define CONFIG_ENV_IS_IN_NAND
+#ifdef CONFIG_ENV_IS_IN_NAND
+ #define CONFIG_ENV_OFFSET	(3 * 1024 * 1024)
+ #define CONFIG_ENV_SIZE	(16 * 1024)
+ #define CONFIG_SYS_NAND_ENV_DEV 0
+#endif
 #ifdef CONFIG_CMD_NAND
 #define CONFIG_NAND_MXS
 #define CONFIG_SYS_MAX_NAND_DEVICE	1
 #define CONFIG_SYS_NAND_BASE		0x60000000
 #define CONFIG_SYS_NAND_5_ADDR_CYCLE
+#endif
+
+/*
+ * MTD Parts Driver
+ */
+#ifdef CONFIG_CMD_MTDPARTS
+#define CONFIG_MTD_DEVICE
+#define CONFIG_MTD_PARTITIONS
+#endif
+
+/*
+ * UBI Driver
+ */
+#ifdef CONFIG_CMD_UBI
+#define CONFIG_RBTREE
+#define CONFIG_LZO
 #endif
 
 /*
@@ -215,6 +240,7 @@
 #define CONFIG_SPI_FLASH_SST
 #define CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
 #define CONFIG_SF_DEFAULT_SPEED		24000000
+#define CONFIG_SPI_FLASH_EON
 
 /* (redundant) environemnt in SPI flash */
 #undef CONFIG_ENV_IS_IN_SPI_FLASH
@@ -239,7 +265,6 @@
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_BOOTDELAY	3
 #define CONFIG_BOOTFILE	"uImage"
-#define CONFIG_BOOTCOMMAND	"run bootcmd_net"
 #define CONFIG_LOADADDR	0x42000000
 #define CONFIG_SYS_LOAD_ADDR	CONFIG_LOADADDR
 #define CONFIG_OF_LIBFDT
@@ -248,13 +273,80 @@
  * Extra Environments
  */
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"console_fsl=console=ttyAM0" \
-	"console_mainline=console=ttyAMA0" \
-	"netargs=setenv bootargs console=${console_mainline}" \
+	"update_nand_full_filename=u-boot.nand\0" \
+	"update_nand_firmware_filename=u-boot.sb\0"	\
+	"update_sd_firmware_filename=u-boot.sd\0" \
+	"update_nand_firmware_maxsz=0x100000\0"	\
+	"update_nand_stride=0x40\0"	/* MX28 datasheet ch. 12.12 */ \
+	"update_nand_count=0x4\0"	/* MX28 datasheet ch. 12.12 */ \
+	"update_nand_get_fcb_size="	/* Get size of FCB blocks */ \
+		"nand device 0 ; " \
+		"nand info ; " \
+		"setexpr fcb_sz ${update_nand_stride} * ${update_nand_count};" \
+		"setexpr update_nand_fcb ${fcb_sz} * ${nand_writesize}\0" \
+	"update_nand_full="		    /* Update FCB, DBBT and FW */ \
+		"if tftp ${update_nand_full_filename} ; then " \
+		"run update_nand_get_fcb_size ; " \
+		"nand scrub -y 0x0 ${filesize} ; " \
+		"nand write.raw ${loadaddr} 0x0 ${update_nand_fcb} ; " \
+		"setexpr update_off ${loadaddr} + ${update_nand_fcb} ; " \
+		"setexpr update_sz ${filesize} - ${update_nand_fcb} ; " \
+		"nand write ${update_off} ${update_nand_fcb} ${update_sz} ; " \
+		"fi\0" \
+	"update_nand_firmware="		/* Update only firmware */ \
+		"if tftp ${update_nand_firmware_filename} ; then " \
+		"run update_nand_get_fcb_size ; " \
+		"setexpr fcb_sz ${update_nand_fcb} * 2 ; " /* FCB + DBBT */ \
+		"setexpr fw_sz ${update_nand_firmware_maxsz} * 2 ; " \
+		"setexpr fw_off ${fcb_sz} + ${update_nand_firmware_maxsz};" \
+		"nand erase ${fcb_sz} ${fw_sz} ; " \
+		"nand write ${loadaddr} ${fcb_sz} ${filesize} ; " \
+		"nand write ${loadaddr} ${fw_off} ${filesize} ; " \
+		"fi\0" \
+	"update_sd_firmware="		/* Update the SD firmware partition */ \
+		"if mmc rescan ; then "	\
+		"if tftp ${update_sd_firmware_filename} ; then " \
+		"setexpr fw_sz ${filesize} / 0x200 ; "	/* SD block size */ \
+		"setexpr fw_sz ${fw_sz} + 1 ; "	\
+		"mmc write ${loadaddr} 0x800 ${fw_sz} ; " \
+		"fi ; "	\
+		"fi\0" \
+	"script=boot.scr\0"	\
+	"uimage=uImage\0" \
+	"console_fsl=ttyAM0\0" \
+	"console_mainline=ttyAMA0\0" \
+	"mmcdev=0\0" \
+	"mmcpart=2\0" \
+	"mmcroot=/dev/mmcblk0p3 rw\0" \
+	"mmcrootfstype=ext3 rootwait\0"	\
+	"mmcargs=setenv bootargs console=${console_mainline},${baudrate} " \
+		"root=${mmcroot} " \
+		"rootfstype=${mmcrootfstype}\0"	\
+	"loadbootscript="  \
+		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+	"bootscript=echo Running bootscript from mmc ...; "	\
+		"source\0" \
+	"loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
+	"mmcboot=echo Booting from mmc ...; " \
+		"run mmcargs; "	\
+		"bootm\0" \
+	"netargs=setenv bootargs console=${console_mainline},${baudrate} " \
 		"root=/dev/nfs " \
-		"ip=dhcp nfsroot=${serverip}:${nfsroot}\0" \
-	"bootcmd_net=echo Booting from net ...; " \
-		"run netargs; " \
-		"dhcp ${uimage}; bootm\0" \
+		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
+	"netboot=echo Booting from net ...; " \
+		"run netargs; "	\
+		"dhcp ${uimage}; bootm\0"
+
+#define CONFIG_BOOTCOMMAND \
+	"if mmc rescan ${mmcdev}; then " \
+		"if run loadbootscript; then " \
+			"run bootscript; " \
+		"else " \
+			"if run loaduimage; then " \
+				"run mmcboot; " \
+			"else run netboot; " \
+			"fi; " \
+		"fi; " \
+	"else run netboot; fi"
 
 #endif /* __MX28EVK_CONFIG_H__ */
