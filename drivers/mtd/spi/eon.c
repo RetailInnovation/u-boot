@@ -48,6 +48,14 @@ static const struct eon_spi_flash_params eon_spi_flash_table[] = {
 		.nr_sectors = 1024,
 		.name = "EN25Q32B",
 	},
+	{
+		.idcode1 = 0x14,
+		.page_size = 256,
+		.pages_per_sector = 16,
+		.sectors_per_block = 16,
+		.nr_sectors = 256,
+		.name = "EN25Q80A",
+	},
 };
 
 static int eon_erase(struct spi_flash *flash, u32 offset, size_t len)
