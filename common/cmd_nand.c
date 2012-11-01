@@ -391,7 +391,7 @@ static void nand_print_and_set_info(int idx)
 }
 
 static int raw_access(nand_info_t *nand, ulong addr, loff_t off, ulong count,
-			int read)
+			int read, int no_oob)
 {
 	int ret = 0;
 
@@ -399,9 +399,9 @@ static int raw_access(nand_info_t *nand, ulong addr, loff_t off, ulong count,
 		/* Raw access */
 		mtd_oob_ops_t ops = {
 			.datbuf = (u8 *)addr,
-			.oobbuf = ((u8 *)addr) + nand->writesize,
+			.oobbuf = no_oob ? NULL : ((u8 *)addr) + nand->writesize,
 			.len = nand->writesize,
-			.ooblen = nand->oobsize,
+			.ooblen = no_oob ? 0 : nand->oobsize,
 			.mode = MTD_OOB_RAW
 		};
 
@@ -416,7 +416,12 @@ static int raw_access(nand_info_t *nand, ulong addr, loff_t off, ulong count,
 			break;
 		}
 
-		addr += nand->writesize + nand->oobsize;
+		if (no_oob) {
+			addr += nand->writesize;
+		} else {
+			addr += nand->writesize + nand->oobsize;
+		}
+
 		off += nand->writesize;
 	}
 
@@ -628,12 +633,21 @@ int do_nand(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 				return 1;
 			}
 
+			if (argc > 5 && !strcmp(argv[5], "no_oob")) {
+				raw = 2;
+			}
+
 			if (pagecount * nand->writesize > size) {
 				puts("Size exceeds partition or device limit\n");
 				return -1;
 			}
 
-			rwsize = pagecount * (nand->writesize + nand->oobsize);
+			if (raw == 1) {
+				rwsize = pagecount * (nand->writesize + nand->oobsize);
+			} else {
+				rwsize = pagecount * (nand->writesize);
+			}
+
 		} else {
 			if (arg_off_size(argc - 3, argv + 3, &dev,
 						&off, &size) != 0)
@@ -683,7 +697,8 @@ int do_nand(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 			else
 				ret = nand->write_oob(nand, off, &ops);
 		} else if (raw) {
-			ret = raw_access(nand, addr, off, pagecount, read);
+			ret = raw_access(nand, addr, off, pagecount, read,
+				raw == 2 ? 1 : 0);
 		} else {
 			printf("Unknown nand command suffix '%s'.\n", s);
 			return 1;
@@ -777,8 +792,8 @@ U_BOOT_CMD(
 	"nand write - addr off|partition size\n"
 	"    read/write 'size' bytes starting at offset 'off'\n"
 	"    to/from memory address 'addr', skipping bad blocks.\n"
-	"nand read.raw - addr off|partition [count]\n"
-	"nand write.raw - addr off|partition [count]\n"
+	"nand read.raw - addr off|partition [count] [no_oob]\n"
+	"nand write.raw - addr off|partition [count] [no_oob]\n"
 	"    Use read.raw/write.raw to avoid ECC and access the flash as-is.\n"
 #ifdef CONFIG_CMD_NAND_TRIMFFS
 	"nand write.trimffs - addr off|partition size\n"
