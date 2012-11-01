@@ -72,6 +72,7 @@
 #define CONFIG_CMD_MTDPARTS
 #define CONFIG_CMD_UBI
 #define CONFIG_CMD_UBIFS
+#define CONFIG_CMD_SETEXPR
 
 /*
  * Memory configurations
@@ -155,9 +156,10 @@
  */
 #define CONFIG_ENV_IS_IN_NAND
 #ifdef CONFIG_ENV_IS_IN_NAND
- #define CONFIG_ENV_OFFSET	(3 * 1024 * 1024)
- #define CONFIG_ENV_SIZE	(16 * 1024)
- #define CONFIG_SYS_NAND_ENV_DEV 0
+ #define CONFIG_ENV_SIZE		(512 * 1024)
+ #define CONFIG_ENV_OFFSET		(3 * 1024 * 1024)
+ #define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)
+ #define CONFIG_SYS_NAND_ENV_DEV 	0
 #endif
 #ifdef CONFIG_CMD_NAND
 #define CONFIG_NAND_MXS
@@ -269,60 +271,100 @@
 #define CONFIG_SYS_LOAD_ADDR	CONFIG_LOADADDR
 #define CONFIG_OF_LIBFDT
 
+#define MTDIDS_DEFAULT "nand0=gpmi-nand"
+#define MTDPARTS_DEFAULT	\
+	"mtdparts=gpmi-nand:"	\
+		"512K(_fcb)ro,"  \
+		"512K(dbbt)ro," \
+		"1M(u-boot-1),"	\
+		"1M(u-boot-2),"	\
+		"512k(env-1),"	\
+		"512k(env-2),"	\
+		"6M(kernel),"	\
+		"1M(devtree),"	\
+		"-(rootfs)"
+
 /*
  * Extra Environments
  */
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	"mtdids=nand0=mtd0\0" \
-	"mtdparts=mtdparts=mtd0:512K(fcb),512K(dbbt),1M(u-boot-1),1M(u-boot-2),1M(env),-(rootfs)\0" \
-	"update_nand_full_filename=u-boot.nand\0" \
-	"update_nand_firmware_filename=u-boot.sb\0"	\
-	"update_nand_firmware_maxsz=0x100000\0"	\
-	"update_nand_stride=0x40\0"	/* MX28 datasheet ch. 12.12 */ \
-	"update_nand_count=0x4\0"	/* MX28 datasheet ch. 12.12 */ \
-	"update_nand_get_fcb_size="	/* Get size of FCB blocks */ \
-		"nand device 0 ; " \
-		"nand info ; " \
-		"setexpr fcb_sz ${update_nand_stride} * ${update_nand_count};" \
-		"setexpr update_nand_fcb ${fcb_sz} * ${nand_writesize}\0" \
-	"update_nand_full="		    /* Update FCB, DBBT and FW */ \
-		"if tftp ${update_nand_full_filename} ; then " \
-		"run update_nand_get_fcb_size ; " \
-		"nand scrub -y 0x0 ${filesize} ; " \
-		"nand write.raw ${loadaddr} 0x0 ${update_nand_fcb} ; " \
-		"setexpr update_off ${loadaddr} + ${update_nand_fcb} ; " \
-		"setexpr update_sz ${filesize} - ${update_nand_fcb} ; " \
-		"nand write ${update_off} ${update_nand_fcb} ${update_sz} ; " \
-		"fi\0" \
-	"update_nand_firmware="		/* Update only firmware */ \
-		"if tftp ${update_nand_firmware_filename} ; then " \
-		"run update_nand_get_fcb_size ; " \
-		"setexpr fcb_sz ${update_nand_fcb} * 2 ; " /* FCB + DBBT */ \
-		"setexpr fw_sz ${update_nand_firmware_maxsz} * 2 ; " \
-		"setexpr fw_off ${fcb_sz} + ${update_nand_firmware_maxsz};" \
-		"nand erase ${fcb_sz} ${fw_sz} ; " \
-		"nand write ${loadaddr} ${fcb_sz} ${filesize} ; " \
-		"nand write ${loadaddr} ${fw_off} ${filesize} ; " \
-		"fi\0" \
-	"uimage=uImage\0" \
-	"console=ttyAM0\0" \
-	"netargs=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/nfs " \
-		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-	"netboot=echo Booting from net ...; " \
-		"run netargs; "	\
+#define CONFIG_EXTRA_ENV_SETTINGS 					\
+	"mtdids=" MTDIDS_DEFAULT "\0"					\
+	"mtdparts=" MTDPARTS_DEFAULT "\0"				\
+	"fcb_size=0x80000\0"						\
+	"dbbt_size=0x80000\0"						\
+	"uboot_size=0x100000\0"						\
+	"uimage=uImage\0"						\
+	"uboot_file=u-boot.sb\0"					\
+	"uboot_file_full=u-boot.nand\0"					\
+	"dtb_file=devicetree.dtb\0"					\
+	"rootfs_file=rootfs.ubi\0"					\
+	"console=ttyAMA0\0"						\
+	"extra_args=coherent_pool=1M\0"					\
+	"rootfs_nand=rootfstype=ubifs ubi.mtd=rootfs "			\
+                "root=ubi0:imx28evk-retail-rootfs rw\0"			\
+	"fdtaddr=0x44000000\0"						\
+	"fdtsize=0x10000\0"						\
+	"nandargs=setenv bootargs console=${console},${baudrate} "	\
+		"${mtdparts} ${rootfs_nand} ${extra_args}\0"		\
+	"netargs=setenv bootargs console=${console},${baudrate} " 	\
+		"root=/dev/nfs " 					\
+		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" 	\
+	"update_nand_uboot_full="					\
+		"if tftp ${uboot_file_full} ; then "		 	\
+		"nand info ; "						\
+		"setexpr fcb_addr ${loadaddr} + 0x0 ; "			\
+		"setexpr dbbt_addr ${fcb_addr} + ${fcb_size} ; "	\
+		"setexpr uboot1_addr ${dbbt_addr} + ${dbbt_size} ; "	\
+		"setexpr uboot2_addr ${uboot1_addr} + ${uboot_size} ; "	\
+		"setexpr fcb_count ${fcb_size} / ${nand_writesize} ; "	\
+		"setexpr dbbt_count ${dbbt_size} / ${nand_writesize} ; "\
+		"nand scrub.part -y _fcb ; "				\
+		"nand scrub.part -y dbbt ; "				\
+		"nand erase.part u-boot-1 ; "				\
+		"nand erase.part u-boot-2 ; "				\
+		"nand write.raw ${fcb_addr} _fcb ${fcb_count} no_oob; "	\
+		"nand write.raw ${dbbt_addr} dbbt ${dbbt_count} no_oob;"\
+		"nand write ${uboot1_addr} u-boot-1 ${uboot_size} ; "	\
+		"nand write ${uboot2_addr} u-boot-2 ${uboot_size} ; "	\
+		"fi\0"							\
+	"update_nand_uboot="						\
+		"if tftp ${uboot_file} ; then "	 			\
+		"nand erase.part u-boot-1 ; "				\
+		"nand erase.part u-boot-2 ; "				\
+		"nand write ${loadaddr} u-boot-1 ${filesize} ; "	\
+		"nand write ${loadaddr} u-boot-2 ${filesize} ; "	\
+		"fi\0"							\
+	"update_nand_kernel="						\
+		"if tftp ${uimage} ; then " 				\
+		"nand erase.part kernel ; "				\
+		"nand write ${loadaddr} kernel ${filesize} ; "		\
+		"fi\0"							\
+	"update_nand_devtree="						\
+		"if tftp ${dtb_file} ; then " 				\
+		"nand erase.part devtree ; "				\
+		"nand write ${loadaddr} devtree ${filesize} ; "		\
+		"fi\0"							\
+	"update_nand_rootfs="						\
+		"if tftp ${rootfs_file} ; then "			\
+		"nand erase.part rootfs ; "				\
+		"nand write ${loadaddr} rootfs ${filesize} ; "		\
+		"fi\0"							\
+	"update_nand_full="						\
+		"run update_nand_uboot_full ; "				\
+		"run update_nand_kernel ; "				\
+		"run update_nand_devtree ; "				\
+		"run update_nand_rootfs\0"				\
+	"bootcmd_nand=echo Booting from NAND...; "			\
+		"setenv autostart no ; "				\
+		"run nandargs ; "					\
+		"nand read ${fdtaddr} devtree ${fdtsize} ; "		\
+		"nboot kernel ; "					\
+		"bootm ${loadaddr} - ${fdtaddr}\0"			\
+	"bootcmd_net=echo Booting from net ...; "			\
+		"run netargs ; "					\
 		"dhcp ${uimage}; bootm\0"
 
 #define CONFIG_BOOTCOMMAND \
-	"if mmc rescan ${mmcdev}; then " \
-		"if run loadbootscript; then " \
-			"run bootscript; " \
-		"else " \
-			"if run loaduimage; then " \
-				"run mmcboot; " \
-			"else run netboot; " \
-			"fi; " \
-		"fi; " \
-	"else run netboot; fi"
+	"run bootcmd_nand"
 
 #endif /* __MX28EVK_CONFIG_H__ */
