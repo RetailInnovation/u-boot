@@ -162,7 +162,8 @@ endif
 COBJS-$(CONFIG_CMD_XIMG) += cmd_ximg.o
 COBJS-$(CONFIG_YAFFS2) += cmd_yaffs2.o
 COBJS-$(CONFIG_CMD_SPL) += cmd_spl.o
-COBJS-y += cmd_startgsm.o
+COBJS-$(CONFIG_CMD_RI_STARTGSM) += cmd_startgsm.o
+COBJS-$(CONFIG_CMD_RI_SPEAKERTEST) += cmd_speakertest.o
 
 # others
 ifdef CONFIG_DDR_SPD
