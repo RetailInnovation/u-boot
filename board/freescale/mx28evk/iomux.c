@@ -30,7 +30,6 @@
 #define	MUX_CONFIG_ENET	(MXS_PAD_3V3 | MXS_PAD_8MA | MXS_PAD_PULLUP)
 #define	MUX_CONFIG_EMI	(MXS_PAD_3V3 | MXS_PAD_12MA | MXS_PAD_NOPULL)
 #define	MUX_CONFIG_SSP2	(MXS_PAD_3V3 | MXS_PAD_4MA | MXS_PAD_PULLUP)
-#define	MUX_CONFIG_GSM	(MXS_PAD_1V8 | MXS_PAD_4MA | MXS_PAD_NOPULL)
 
 const iomux_cfg_t iomux_setup[] = {
 	/* DUART */
@@ -163,19 +162,6 @@ const iomux_cfg_t iomux_setup[] = {
 	/* I2C */
 	MX28_PAD_I2C0_SCL__I2C0_SCL,
 	MX28_PAD_I2C0_SDA__I2C0_SDA,
-
-	/* GSM module reset */
-	MX28_PAD_ENET0_TXD2__GPIO_4_11 | MUX_CONFIG_GSM,
-
-	/* GSM module on/off */
-	MX28_PAD_ENET0_TXD3__GPIO_4_12 | MUX_CONFIG_GSM,
-
-	/* GSM module status */
-	MX28_PAD_SSP1_CMD__GPIO_2_13 | MUX_CONFIG_GSM,
-
-	/* GSM module power enable*/
-	MX28_PAD_ENET0_COL__GPIO_4_14 |
-		(MXS_PAD_3V3 | MXS_PAD_4MA | MXS_PAD_NOPULL),
 };
 
 #define HW_DRAM_CTL29	(0x74 >> 2)
