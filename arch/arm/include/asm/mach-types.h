@@ -1105,6 +1105,7 @@ extern unsigned int __machine_arch_type;
 #define MACH_TYPE_UBISYS_P9D_EVP       3493
 #define MACH_TYPE_ATDGP318             3494
 #define MACH_TYPE_OMAP5_SEVM           3777
+#define MACH_TYPE_RI_ETU               9000
 
 #ifdef CONFIG_ARCH_EBSA110
 # ifdef machine_arch_type
@@ -14225,6 +14226,18 @@ extern unsigned int __machine_arch_type;
 /*
  * These have not yet been registered
  */
+
+#ifdef CONFIG_MACH_RI_ETU
+# ifdef machine_arch_type
+#  undef machine_arch_type
+#  define machine_arch_type     __machine_arch_type
+# else
+#  define machine_arch_type     MACH_TYPE_RI_ETU
+# endif
+# define machine_is_ri_etu()      (machine_arch_type == MACH_TYPE_RI_ETU)
+#else
+# define machine_is_ri_etu()      (0)
+#endif
 
 #ifndef machine_arch_type
 #define machine_arch_type	__machine_arch_type
