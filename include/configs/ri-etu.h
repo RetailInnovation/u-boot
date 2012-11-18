@@ -306,7 +306,6 @@
 	"dtb_file=devicetree.dtb\0"					\
 	"rootfs_file=rootfs.ubi\0"					\
 	"console=ttyAMA0\0"						\
-	"extra_args=coherent_pool=1M\0"					\
 	"rootfs_nand=rootfstype=ubifs ubi.mtd=rootfs "			\
                 "root=ubi0_0 rw\0"					\
 	"fdtaddr=0x44000000\0"						\
