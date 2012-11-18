@@ -36,6 +36,9 @@
 #include <miiphy.h>
 #include <netdev.h>
 #include <errno.h>
+#include <fdt_support.h>
+#include <mtd_node.h>
+#include <jffs2/load_kernel.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -289,5 +292,17 @@ static void board_gsm_modem_init(void)
         gpio_direction_output(MX28_PAD_ENET0_RXD3__GPIO_4_10, 0);
         udelay(100);
         gpio_set_value(MX28_PAD_ENET0_RXD3__GPIO_4_10, 1);
+}
+#endif
+
+#if defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP)
+void ft_board_setup(void *blob, bd_t *bd)
+{
+#ifdef CONFIG_FDT_FIXUP_PARTITIONS
+	struct node_info nodes[] = {
+		{ "fsl,imx28-gpmi-nand", MTD_DEV_TYPE_NAND, },
+	};
+	fdt_fixup_mtdparts(blob, nodes, ARRAY_SIZE(nodes));
+#endif
 }
 #endif

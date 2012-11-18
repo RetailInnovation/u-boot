@@ -275,6 +275,8 @@
 #define CONFIG_LOADADDR	0x42000000
 #define CONFIG_SYS_LOAD_ADDR	CONFIG_LOADADDR
 #define CONFIG_OF_LIBFDT
+#define CONFIG_OF_BOARD_SETUP
+#define CONFIG_FDT_FIXUP_PARTITIONS
 
 #define MTDIDS_DEFAULT "nand0=gpmi-nand"
 #define MTDPARTS_DEFAULT	\
@@ -310,7 +312,7 @@
 	"fdtaddr=0x44000000\0"						\
 	"fdtsize=0x10000\0"						\
 	"nandargs=setenv bootargs console=${console},${baudrate} "	\
-		"${mtdparts} ${rootfs_nand} ${extra_args}\0"		\
+		"${rootfs_nand} ${extra_args}\0"			\
 	"netargs=setenv bootargs console=${console},${baudrate} " 	\
 		"root=/dev/nfs " 					\
 		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" 	\
