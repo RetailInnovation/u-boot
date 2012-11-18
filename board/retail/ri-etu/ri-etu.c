@@ -60,13 +60,6 @@ int board_early_init_f(void)
 	/* SSP2 clock at 96MHz */
 	mx28_set_sspclk(MXC_SSPCLK2, 96000, 0);
 
-#ifdef	CONFIG_CMD_USB
-	mxs_iomux_setup_pad(MX28_PAD_SSP2_SS1__USB1_OVERCURRENT);
-	mxs_iomux_setup_pad(MX28_PAD_AUART2_RX__GPIO_3_8 |
-			MXS_PAD_4MA | MXS_PAD_3V3 | MXS_PAD_NOPULL);
-	gpio_direction_output(MX28_PAD_AUART2_RX__GPIO_3_8, 1);
-#endif
-
 	return 0;
 }
 
@@ -112,19 +105,6 @@ int board_mmc_init(bd_t *bis)
 
 #ifdef	CONFIG_CMD_NET
 
-#define	MII_OPMODE_STRAP_OVERRIDE	0x16
-#define	MII_PHY_CTRL1			0x1e
-#define	MII_PHY_CTRL2			0x1f
-
-int fecmxc_mii_postcall(int phy)
-{
-	miiphy_write("FEC1", phy, MII_BMCR, 0x9000);
-	miiphy_write("FEC1", phy, MII_OPMODE_STRAP_OVERRIDE, 0x0202);
-	if (phy == 3)
-		miiphy_write("FEC1", 3, MII_PHY_CTRL2, 0x8180);
-	return 0;
-}
-
 int board_eth_init(bd_t *bis)
 {
 	struct mx28_clkctrl_regs *clkctrl_regs =
@@ -138,10 +118,10 @@ int board_eth_init(bd_t *bis)
 	writel(CLKCTRL_ENET_TIME_SEL_RMII_CLK | CLKCTRL_ENET_CLK_OUT_EN,
 					&clkctrl_regs->hw_clkctrl_enet);
 
-	/* Power-on FECs */
+	/* Power-on FEC */
 	gpio_direction_output(MX28_PAD_SSP1_DATA3__GPIO_2_15, 0);
 
-	/* Reset FEC PHYs */
+	/* Reset FEC PHY */
 	gpio_direction_output(MX28_PAD_ENET0_RX_CLK__GPIO_4_13, 0);
 	udelay(200);
 	gpio_set_value(MX28_PAD_ENET0_RX_CLK__GPIO_4_13, 1);
@@ -152,34 +132,10 @@ int board_eth_init(bd_t *bis)
 		return ret;
 	}
 
-	ret = fecmxc_initialize_multi(bis, 1, 3, MXS_ENET1_BASE);
-	if (ret) {
-		puts("FEC MXS: Unable to init FEC1\n");
-		return ret;
-	}
-
 	dev = eth_get_dev_by_name("FEC0");
 	if (!dev) {
 		puts("FEC MXS: Unable to get FEC0 device entry\n");
 		return -EINVAL;
-	}
-
-	ret = fecmxc_register_mii_postcall(dev, fecmxc_mii_postcall);
-	if (ret) {
-		puts("FEC MXS: Unable to register FEC0 mii postcall\n");
-		return ret;
-	}
-
-	dev = eth_get_dev_by_name("FEC1");
-	if (!dev) {
-		puts("FEC MXS: Unable to get FEC1 device entry\n");
-		return -EINVAL;
-	}
-
-	ret = fecmxc_register_mii_postcall(dev, fecmxc_mii_postcall);
-	if (ret) {
-		puts("FEC MXS: Unable to register FEC1 mii postcall\n");
-		return ret;
 	}
 
 	return ret;
