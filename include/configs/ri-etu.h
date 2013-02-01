@@ -287,9 +287,14 @@
 		"1M(u-boot-2),"	\
 		"512k(env-1),"	\
 		"512k(env-2),"	\
+		"-(data)"
+
+
+/*
 		"6M(kernel),"	\
 		"1M(devtree),"	\
 		"-(rootfs)"
+*/
 
 /*
  * Extra Environments
@@ -300,14 +305,15 @@
 	"fcb_size=0x80000\0"						\
 	"dbbt_size=0x80000\0"						\
 	"uboot_size=0x100000\0"						\
+	"kerneladdr=0x42000000\0"					\
 	"uimage=uImage\0"						\
 	"uboot_file=u-boot.sb\0"					\
 	"uboot_file_full=u-boot.nand\0"					\
 	"dtb_file=devicetree.dtb\0"					\
-	"rootfs_file=rootfs.ubi\0"					\
+	"rootfs_file=rootfs.ubifs\0"					\
 	"console=ttyAMA0\0"						\
-	"rootfs_nand=rootfstype=ubifs ubi.mtd=rootfs "			\
-                "root=ubi0_0 rw\0"					\
+	"rootfs_nand=rootfstype=ubifs ubi.mtd=data "			\
+                "root=ubi0:rootfs rw\0"					\
 	"fdtaddr=0x44000000\0"						\
 	"fdtsize=0x10000\0"						\
 	"nandargs=setenv bootargs console=${console},${baudrate} "	\
@@ -342,18 +348,24 @@
 		"fi\0"							\
 	"update_nand_kernel="						\
 		"if tftp ${uimage} ; then " 				\
-		"nand erase.part kernel ; "				\
-		"nand write ${loadaddr} kernel ${filesize} ; "		\
+		"ubi part data 2048 ; "					\
+		"ubi remove kernel ; "					\
+		"ubi create kernel 0xa00000 s ; "			\
+		"ubi write  ${loadaddr} kernel ${filesize} ; "		\
 		"fi\0"							\
 	"update_nand_devtree="						\
 		"if tftp ${dtb_file} ; then " 				\
-		"nand erase.part devtree ; "				\
-		"nand write ${loadaddr} devtree ${filesize} ; "		\
+		"ubi part data 2048 ; "					\
+		"ubi remove fdt ; "					\
+		"ubi create fdt 0x100000 s ; "				\
+		"ubi write  ${loadaddr} fdt ${filesize} ; "		\
 		"fi\0"							\
 	"update_nand_rootfs="						\
 		"if tftp ${rootfs_file} ; then "			\
-		"nand erase.part rootfs ; "				\
-		"nand write ${loadaddr} rootfs ${filesize} ; "		\
+		"ubi part data 2048 ; "					\
+		"ubi remove rootfs ; "					\
+		"ubi create rootfs 0xc800000 ; "			\
+		"ubi write  ${loadaddr} rootfs ${filesize} ; "          \
 		"fi\0"							\
 	"update_nand_full="						\
 		"run update_nand_uboot_full ; "				\
@@ -362,10 +374,11 @@
 		"run update_nand_rootfs\0"				\
 	"bootcmd_nand=echo Booting from NAND...; "			\
 		"setenv autostart no ; "				\
+		"ubi part data 2048 ; "					\
 		"run nandargs ; "					\
-		"nand read ${fdtaddr} devtree ${fdtsize} ; "		\
-		"nboot kernel ; "					\
-		"bootm ${loadaddr} - ${fdtaddr}\0"			\
+		"ubi read  ${fdtaddr} fdt ${fdtsize} ; "		\
+		"ubi read  ${kerneladdr} kernel ; "			\
+		"bootm ${kerneladdr} - ${fdtaddr}\0"	\
 	"bootcmd_net=echo Booting from net ...; "			\
 		"run netargs ; "					\
 		"dhcp ${uimage}; bootm\0"
