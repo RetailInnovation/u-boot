@@ -310,6 +310,8 @@
 	"uboot_file=u-boot.sb\0"					\
 	"uboot_file_full=u-boot.nand\0"					\
 	"dtb_file=devicetree.dtb\0"					\
+	"initramfs_file=initramfs.uboot\0"				\
+	"initramaddr=0x43000000\0"					\
 	"rootfs_file=rootfs.ubifs\0"					\
 	"console=ttyAMA0\0"						\
 	"rootfs_nand=rootfstype=ubifs ubi.mtd=data "			\
@@ -367,6 +369,13 @@
 		"ubi create rootfs 0xc800000 ; "			\
 		"ubi write  ${loadaddr} rootfs ${filesize} ; "          \
 		"fi\0"							\
+	"update_nand_initramfs="					\
+		"if tftp ${initramfs_file} ; then "			\
+		"ubi part data 2048 ; "					\
+		"ubi remove initramfs ; "				\
+		"ubi create initramfs 0x200000 s ; "			\
+		"ubi write  ${loadaddr} initramfs ${filesize} ; "	\
+		"fi\0"							\
 	"update_nand_full="						\
 		"run update_nand_uboot_full ; "				\
 		"run update_nand_kernel ; "				\
@@ -377,8 +386,9 @@
 		"ubi part data 2048 ; "					\
 		"run nandargs ; "					\
 		"ubi read  ${fdtaddr} fdt ${fdtsize} ; "		\
+		"ubi read  ${initramaddr} initramfs ; "			\
 		"ubi read  ${kerneladdr} kernel ; "			\
-		"bootm ${kerneladdr} - ${fdtaddr}\0"	\
+		"bootm ${kerneladdr} ${initramaddr} ${fdtaddr}\0"	\
 	"bootcmd_net=echo Booting from net ...; "			\
 		"run netargs ; "					\
 		"dhcp ${uimage}; bootm\0"
