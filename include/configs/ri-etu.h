@@ -299,107 +299,107 @@
 /*
  * Extra Environments
  */
-#define CONFIG_EXTRA_ENV_SETTINGS 					\
-	"mtdids=" MTDIDS_DEFAULT "\0"					\
-	"mtdparts=" MTDPARTS_DEFAULT "\0"				\
-	"fcb_size=0x80000\0"						\
-	"dbbt_size=0x80000\0"						\
-	"uboot_size=0x100000\0"						\
-	"kerneladdr=0x42000000\0"					\
-	"uimage=uImage\0"						\
-	"uboot_file=u-boot.sb\0"					\
-	"uboot_file_full=u-boot.nand\0"					\
-	"dtb_file=devicetree.dtb\0"					\
-	"etuid_file=etuid.nand\0"					\
-	"initramfs_file=initramfs.uboot\0"				\
-	"initramaddr=0x43000000\0"					\
-	"rootfs_file=rootfs.ubifs\0"					\
-	"console=ttyAMA0\0"						\
-	"rootfs_nand=rootfstype=ubifs ubi.mtd=data "			\
-                "root=ubi0:rootfs rw\0"					\
-	"fdtaddr=0x44000000\0"						\
-	"fdtsize=0x10000\0"						\
-	"nandargs=setenv bootargs console=${console},${baudrate} "	\
-		"${rootfs_nand} ${extra_args}\0"			\
-	"netargs=setenv bootargs console=${console},${baudrate} " 	\
-		"root=/dev/nfs " 					\
-		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" 	\
-	"update_nand_uboot_full="					\
-		"if tftp ${uboot_file_full} ; then "		 	\
-		"nand info ; "						\
-		"setexpr fcb_addr ${loadaddr} + 0x0 ; "			\
-		"setexpr dbbt_addr ${fcb_addr} + ${fcb_size} ; "	\
-		"setexpr uboot1_addr ${dbbt_addr} + ${dbbt_size} ; "	\
-		"setexpr uboot2_addr ${uboot1_addr} + ${uboot_size} ; "	\
-		"setexpr fcb_count ${fcb_size} / ${nand_writesize} ; "	\
-		"setexpr dbbt_count ${dbbt_size} / ${nand_writesize} ; "\
-		"nand scrub.part -y _fcb ; "				\
-		"nand scrub.part -y dbbt ; "				\
-		"nand erase.part u-boot-1 ; "				\
-		"nand erase.part u-boot-2 ; "				\
-		"nand write.raw ${fcb_addr} _fcb ${fcb_count} no_oob; "	\
-		"nand write.raw ${dbbt_addr} dbbt ${dbbt_count} no_oob;"\
-		"nand write ${uboot1_addr} u-boot-1 ${uboot_size} ; "	\
-		"nand write ${uboot2_addr} u-boot-2 ${uboot_size} ; "	\
-		"fi\0"							\
-	"update_nand_uboot="						\
-		"if tftp ${uboot_file} ; then "	 			\
-		"nand erase.part u-boot-1 ; "				\
-		"nand erase.part u-boot-2 ; "				\
-		"nand write ${loadaddr} u-boot-1 ${filesize} ; "	\
-		"nand write ${loadaddr} u-boot-2 ${filesize} ; "	\
-		"fi\0"							\
-	"update_nand_kernel="						\
-		"if tftp ${uimage} ; then " 				\
-		"ubi part data 2048 ; "					\
-		"ubi remove kernel ; "					\
-		"ubi create kernel 0xa00000 s ; "			\
-		"ubi write  ${loadaddr} kernel ${filesize} ; "		\
-		"fi\0"							\
-	"update_nand_devtree="						\
-		"if tftp ${dtb_file} ; then " 				\
-		"ubi part data 2048 ; "					\
-		"ubi remove fdt ; "					\
-		"ubi create fdt 0x100000 s ; "				\
-		"ubi write  ${loadaddr} fdt ${filesize} ; "		\
-		"fi\0"							\
-	"update_nand_etuid="						\
-		"if tftp ${etuid_file} ; then "				\
-		"ubi part data 2048 ; "					\
-		"ubi remove etuid ; "					\
-		"ubi create etuid 0x100000 s ; "			\
-		"ubi write  ${loadaddr} etuid ${filesize} ; "		\
-		"fi\0"							\
-	"update_nand_rootfs="						\
-		"if tftp ${rootfs_file} ; then "			\
-		"ubi part data 2048 ; "					\
-		"ubi remove rootfs ; "					\
-		"ubi create rootfs 0xc800000 ; "			\
-		"ubi write  ${loadaddr} rootfs ${filesize} ; "          \
-		"fi\0"							\
-	"update_nand_initramfs="					\
-		"if tftp ${initramfs_file} ; then "			\
-		"ubi part data 2048 ; "					\
-		"ubi remove initramfs ; "				\
-		"ubi create initramfs 0x200000 s ; "			\
-		"ubi write  ${loadaddr} initramfs ${filesize} ; "	\
-		"fi\0"							\
-	"update_nand_full="						\
-		"run update_nand_uboot_full ; "				\
-		"run update_nand_kernel ; "				\
-		"run update_nand_devtree ; "				\
-		"run update_nand_etuid ; "				\
-		"run update_nand_rootfs\0"				\
-	"bootcmd_nand=echo Booting from NAND...; "			\
-		"setenv autostart no ; "				\
-		"ubi part data 2048 ; "					\
-		"run nandargs ; "					\
-		"ubi read  ${fdtaddr} fdt ${fdtsize} ; "		\
-		"ubi read  ${initramaddr} initramfs ; "			\
-		"ubi read  ${kerneladdr} kernel ; "			\
-		"bootm ${kerneladdr} ${initramaddr} ${fdtaddr}\0"	\
-	"bootcmd_net=echo Booting from net ...; "			\
-		"run netargs ; "					\
+#define CONFIG_EXTRA_ENV_SETTINGS						\
+	"mtdids=" MTDIDS_DEFAULT "\0"						\
+	"mtdparts=" MTDPARTS_DEFAULT "\0"					\
+	"fcb_size=0x80000\0"							\
+	"dbbt_size=0x80000\0"							\
+	"uboot_size=0x100000\0"							\
+	"kerneladdr=0x42000000\0"						\
+	"uimage=uImage\0"							\
+	"uboot_file=u-boot.sb\0"						\
+	"uboot_file_full=u-boot.nand\0"						\
+	"dtb_file=devicetree.dtb\0"						\
+	"etuid_file=etuid.nand\0"						\
+	"initramfs_file=initramfs.uboot\0"					\
+	"initramaddr=0x43000000\0"						\
+	"rootfs_file=rootfs.ubifs\0"						\
+	"console=ttyAMA0\0"							\
+	"rootfs_nand=rootfstype=ubifs ubi.mtd=data "				\
+		"root=ubi0:rootfs rw\0"						\
+	"fdtaddr=0x44000000\0"							\
+	"fdtsize=0x10000\0"							\
+	"nandargs=setenv bootargs console=${console},${baudrate} "		\
+		"${rootfs_nand} ${extra_args} quiet\0"				\
+	"netargs=setenv bootargs console=${console},${baudrate} "		\
+		"root=/dev/nfs "						\
+		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0"		\
+	"update_nand_uboot_full="						\
+		"if tftp ${uboot_file_full} ; then "				\
+		"nand info ; "							\
+		"setexpr fcb_addr ${loadaddr} + 0x0 ; "				\
+		"setexpr dbbt_addr ${fcb_addr} + ${fcb_size} ; "		\
+		"setexpr uboot1_addr ${dbbt_addr} + ${dbbt_size} ; "		\
+		"setexpr uboot2_addr ${uboot1_addr} + ${uboot_size} ; "		\
+		"setexpr fcb_count ${fcb_size} / ${nand_writesize} ; "		\
+		"setexpr dbbt_count ${dbbt_size} / ${nand_writesize} ; "	\
+		"nand scrub.part -y _fcb ; "					\
+		"nand scrub.part -y dbbt ; "					\
+		"nand erase.part u-boot-1 ; "					\
+		"nand erase.part u-boot-2 ; "					\
+		"nand write.raw ${fcb_addr} _fcb ${fcb_count} no_oob; "		\
+		"nand write.raw ${dbbt_addr} dbbt ${dbbt_count} no_oob;"	\
+		"nand write ${uboot1_addr} u-boot-1 ${uboot_size} ; "		\
+		"nand write ${uboot2_addr} u-boot-2 ${uboot_size} ; "		\
+		"fi\0"								\
+	"update_nand_uboot="							\
+		"if tftp ${uboot_file} ; then "					\
+		"nand erase.part u-boot-1 ; "					\
+		"nand erase.part u-boot-2 ; "					\
+		"nand write ${loadaddr} u-boot-1 ${filesize} ; "		\
+		"nand write ${loadaddr} u-boot-2 ${filesize} ; "		\
+		"fi\0"								\
+	"update_nand_kernel="							\
+		"if tftp ${uimage} ; then "					\
+		"ubi part data 2048 ; "						\
+		"ubi remove kernel ; "						\
+		"ubi create kernel 0xa00000 s ; "				\
+		"ubi write  ${loadaddr} kernel ${filesize} ; "			\
+		"fi\0"								\
+	"update_nand_devtree="							\
+		"if tftp ${dtb_file} ; then "					\
+		"ubi part data 2048 ; "						\
+		"ubi remove fdt ; "						\
+		"ubi create fdt 0x100000 s ; "					\
+		"ubi write  ${loadaddr} fdt ${filesize} ; "			\
+		"fi\0"								\
+	"update_nand_etuid="							\
+		"if tftp ${etuid_file} ; then "					\
+		"ubi part data 2048 ; "						\
+		"ubi remove etuid ; "						\
+		"ubi create etuid 0x100000 s ; "				\
+		"ubi write  ${loadaddr} etuid ${filesize} ; "			\
+		"fi\0"								\
+	"update_nand_rootfs="							\
+		"if tftp ${rootfs_file} ; then "				\
+		"ubi part data 2048 ; "						\
+		"ubi remove rootfs ; "						\
+		"ubi create rootfs 0xc800000 ; "				\
+		"ubi write  ${loadaddr} rootfs ${filesize} ; "			\
+		"fi\0"								\
+	"update_nand_initramfs="						\
+		"if tftp ${initramfs_file} ; then "				\
+		"ubi part data 2048 ; "						\
+		"ubi remove initramfs ; "					\
+		"ubi create initramfs 0x200000 s ; "				\
+		"ubi write  ${loadaddr} initramfs ${filesize} ; "		\
+		"fi\0"								\
+	"update_nand_full="							\
+		"run update_nand_uboot_full ; "					\
+		"run update_nand_kernel ; "					\
+		"run update_nand_devtree ; "					\
+		"run update_nand_etuid ; "					\
+		"run update_nand_rootfs\0"					\
+	"bootcmd_nand=echo Booting from NAND...; "				\
+		"setenv autostart no ; "					\
+		"ubi part data 2048 ; "						\
+		"run nandargs ; "						\
+		"ubi read  ${fdtaddr} fdt ${fdtsize} ; "			\
+		"ubi read  ${initramaddr} initramfs ; "				\
+		"ubi read  ${kerneladdr} kernel ; "				\
+		"bootm ${kerneladdr} ${initramaddr} ${fdtaddr}\0"		\
+	"bootcmd_net=echo Booting from net ...; "				\
+		"run netargs ; "						\
 		"dhcp ${uimage}; bootm\0"
 
 #define CONFIG_BOOTCOMMAND \
