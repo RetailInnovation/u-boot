@@ -282,8 +282,8 @@
 	"mtdparts=gpmi-nand:"	\
 		"512K(_fcb)ro,"  \
 		"512K(dbbt)ro," \
-		"1M(u-boot-1),"	\
-		"1M(u-boot-2),"	\
+		"1M(u-boot-1)ro,"	\
+		"1M(u-boot-2)ro,"	\
 		"512k(env-1),"	\
 		"512k(env-2),"	\
 		"-(data)"
