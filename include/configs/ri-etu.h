@@ -107,7 +107,6 @@
  */
 #define CONFIG_SYS_TEXT_BASE	0x40000100
 
-#define CONFIG_ENV_OVERWRITE
 /*
  * U-Boot general configurations
  */
