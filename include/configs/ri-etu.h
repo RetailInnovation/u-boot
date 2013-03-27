@@ -279,13 +279,11 @@
 #define MTDIDS_DEFAULT "nand0=gpmi-nand"
 #define MTDPARTS_DEFAULT	\
 	"mtdparts=gpmi-nand:"	\
-		"512K(_fcb)ro,"  \
-		"512K(dbbt)ro," \
-		"1M(u-boot-1)ro,"	\
-		"1M(u-boot-2)ro,"	\
-		"512k(env-1),"	\
-		"512k(env-2),"	\
-		"-(data)"
+		"1M@1M(uboot1)ro,"	\
+		"1M(uboot2)ro,"	\
+		"512k(uboot-env1),"	\
+		"512k(uboot-env2),"	\
+		"-(system)"
 
 
 /*
@@ -313,7 +311,7 @@
 	"initramaddr=0x43000000\0"						\
 	"rootfs_file=rootfs.ubifs\0"						\
 	"console=ttyAMA0\0"							\
-	"rootfs_nand=rootfstype=ubifs ubi.mtd=data "				\
+	"rootfs_nand=rootfstype=ubifs ubi.mtd=system "				\
 		"root=ubi0:rootfs rw\0"						\
 	"fdtaddr=0x44000000\0"							\
 	"fdtsize=0x10000\0"							\
@@ -349,35 +347,35 @@
 		"fi\0"								\
 	"update_nand_kernel="							\
 		"if tftp ${uimage} ; then "					\
-		"ubi part data 2048 ; "						\
+		"ubi part system 2048 ; "						\
 		"ubi remove kernel ; "						\
 		"ubi create kernel 0xa00000 s ; "				\
 		"ubi write  ${loadaddr} kernel ${filesize} ; "			\
 		"fi\0"								\
 	"update_nand_devtree="							\
 		"if tftp ${dtb_file} ; then "					\
-		"ubi part data 2048 ; "						\
+		"ubi part system 2048 ; "						\
 		"ubi remove fdt ; "						\
 		"ubi create fdt 0x100000 s ; "					\
 		"ubi write  ${loadaddr} fdt ${filesize} ; "			\
 		"fi\0"								\
 	"update_nand_etuid="							\
 		"if tftp ${etuid_file} ; then "					\
-		"ubi part data 2048 ; "						\
+		"ubi part system 2048 ; "						\
 		"ubi remove etuid ; "						\
 		"ubi create etuid 0x100000 s ; "				\
 		"ubi write  ${loadaddr} etuid ${filesize} ; "			\
 		"fi\0"								\
 	"update_nand_rootfs="							\
 		"if tftp ${rootfs_file} ; then "				\
-		"ubi part data 2048 ; "						\
+		"ubi part system 2048 ; "						\
 		"ubi remove rootfs ; "						\
 		"ubi create rootfs 0xc800000 ; "				\
 		"ubi write  ${loadaddr} rootfs ${filesize} ; "			\
 		"fi\0"								\
 	"update_nand_initramfs="						\
 		"if tftp ${initramfs_file} ; then "				\
-		"ubi part data 2048 ; "						\
+		"ubi part system 2048 ; "						\
 		"ubi remove initramfs ; "					\
 		"ubi create initramfs 0x200000 s ; "				\
 		"ubi write  ${loadaddr} initramfs ${filesize} ; "		\
@@ -390,7 +388,7 @@
 		"run update_nand_rootfs\0"					\
 	"bootcmd_nand=echo Booting from NAND...; "				\
 		"setenv autostart no ; "					\
-		"ubi part data 2048 ; "						\
+		"ubi part system 2048 ; "						\
 		"run nandargs ; "						\
 		"ubi read  ${fdtaddr} fdt ${fdtsize} ; "			\
 		"ubi read  ${initramaddr} initramfs ; "				\
