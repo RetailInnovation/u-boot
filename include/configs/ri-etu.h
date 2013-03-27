@@ -370,7 +370,7 @@
 		"if tftp ${rootfs_file} ; then "				\
 		"ubi part system 2048 ; "						\
 		"ubi remove rootfs ; "						\
-		"ubi create rootfs 0xc800000 ; "				\
+		"ubi create rootfs 0x6000000 ; "				\
 		"ubi write  ${loadaddr} rootfs ${filesize} ; "			\
 		"fi\0"								\
 	"update_nand_initramfs="						\
