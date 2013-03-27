@@ -331,19 +331,19 @@
 		"setexpr dbbt_count ${dbbt_size} / ${nand_writesize} ; "	\
 		"nand scrub.part -y _fcb ; "					\
 		"nand scrub.part -y dbbt ; "					\
-		"nand erase.part u-boot-1 ; "					\
-		"nand erase.part u-boot-2 ; "					\
+		"nand erase.part uboot1 ; "					\
+		"nand erase.part uboot2 ; "					\
 		"nand write.raw ${fcb_addr} _fcb ${fcb_count} no_oob; "		\
 		"nand write.raw ${dbbt_addr} dbbt ${dbbt_count} no_oob;"	\
-		"nand write ${uboot1_addr} u-boot-1 ${uboot_size} ; "		\
-		"nand write ${uboot2_addr} u-boot-2 ${uboot_size} ; "		\
+		"nand write ${uboot1_addr} uboot1 ${uboot_size} ; "		\
+		"nand write ${uboot2_addr} uboot2 ${uboot_size} ; "		\
 		"fi\0"								\
 	"update_nand_uboot="							\
 		"if tftp ${uboot_file} ; then "					\
-		"nand erase.part u-boot-1 ; "					\
-		"nand erase.part u-boot-2 ; "					\
-		"nand write ${loadaddr} u-boot-1 ${filesize} ; "		\
-		"nand write ${loadaddr} u-boot-2 ${filesize} ; "		\
+		"nand erase.part uboot1 ; "					\
+		"nand erase.part uboot2 ; "					\
+		"nand write ${loadaddr} uboot1 ${filesize} ; "		\
+		"nand write ${loadaddr} uboot2 ${filesize} ; "		\
 		"fi\0"								\
 	"update_nand_kernel="							\
 		"if tftp ${uimage} ; then "					\
