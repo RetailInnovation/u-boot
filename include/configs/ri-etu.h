@@ -299,7 +299,9 @@
 	"mtdids=" MTDIDS_DEFAULT "\0"						\
 	"mtdparts=" MTDPARTS_DEFAULT "\0"					\
 	"fcb_size=0x80000\0"							\
+	"fcb_off=0x0\0"								\
 	"dbbt_size=0x80000\0"							\
+	"dbbt_off=0x80000\0"							\
 	"uboot_size=0x100000\0"							\
 	"kerneladdr=0x42000000\0"						\
 	"uimage=uImage\0"							\
@@ -328,12 +330,12 @@
 		"setexpr uboot2_addr ${uboot1_addr} + ${uboot_size} ; "		\
 		"setexpr fcb_count ${fcb_size} / ${nand_writesize} ; "		\
 		"setexpr dbbt_count ${dbbt_size} / ${nand_writesize} ; "	\
-		"nand scrub.part -y _fcb ; "					\
-		"nand scrub.part -y dbbt ; "					\
+		"nand scrub -y ${fcb_off} ${fcb_size} ; "			\
+		"nand scrub -y ${dbbt_off} ${dbbt_size} ; "			\
 		"nand erase.part uboot1 ; "					\
 		"nand erase.part uboot2 ; "					\
-		"nand write.raw ${fcb_addr} _fcb ${fcb_count} no_oob; "		\
-		"nand write.raw ${dbbt_addr} dbbt ${dbbt_count} no_oob;"	\
+		"nand write.raw ${fcb_addr} ${fcb_off} ${fcb_count} no_oob; "		\
+		"nand write.raw ${dbbt_addr} ${dbbt_off} ${dbbt_count} no_oob;"		\
 		"nand write ${uboot1_addr} uboot1 ${uboot_size} ; "		\
 		"nand write ${uboot2_addr} uboot2 ${uboot_size} ; "		\
 		"fi\0"								\
@@ -373,9 +375,11 @@
 		"ubi write  ${loadaddr} initramfs ${filesize} ; "		\
 		"fi\0"								\
 	"update_nand_full="							\
+		"nand erase.part system ; "					\
 		"run update_nand_uboot_full ; "					\
 		"run update_nand_kernel ; "					\
 		"run update_nand_devtree ; "					\
+		"run update_nand_initramfs ; "					\
 		"run update_nand_rootfs\0"					\
 	"bootcmd_nand=echo Booting from NAND...; "				\
 		"setenv autostart no ; "					\
