@@ -306,7 +306,6 @@
 	"uboot_file=u-boot.sb\0"						\
 	"uboot_file_full=u-boot.nand\0"						\
 	"dtb_file=devicetree.dtb\0"						\
-	"etuid_file=etuid.nand\0"						\
 	"initramfs_file=initramfs.uboot\0"					\
 	"initramaddr=0x43000000\0"						\
 	"rootfs_file=rootfs.ubifs\0"						\
@@ -359,13 +358,6 @@
 		"ubi create fdt 0x100000 s ; "					\
 		"ubi write  ${loadaddr} fdt ${filesize} ; "			\
 		"fi\0"								\
-	"update_nand_etuid="							\
-		"if tftp ${etuid_file} ; then "					\
-		"ubi part system 2048 ; "						\
-		"ubi remove etuid ; "						\
-		"ubi create etuid 0x100000 s ; "				\
-		"ubi write  ${loadaddr} etuid ${filesize} ; "			\
-		"fi\0"								\
 	"update_nand_rootfs="							\
 		"if tftp ${rootfs_file} ; then "				\
 		"ubi part system 2048 ; "						\
@@ -384,7 +376,6 @@
 		"run update_nand_uboot_full ; "					\
 		"run update_nand_kernel ; "					\
 		"run update_nand_devtree ; "					\
-		"run update_nand_etuid ; "					\
 		"run update_nand_rootfs\0"					\
 	"bootcmd_nand=echo Booting from NAND...; "				\
 		"setenv autostart no ; "					\
