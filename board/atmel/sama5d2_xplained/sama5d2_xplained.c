@@ -101,7 +101,7 @@ void spl_board_init(void)
 
 static void ddrc_conf(struct atmel_mpddrc_config *ddrc)
 {
-	ddrc->md = (ATMEL_MPDDRC_MD_DBW_32_BITS | ATMEL_MPDDRC_MD_DDR3_SDRAM);
+	ddrc->md = (ATMEL_MPDDRC_MD_DBW_16_BITS | ATMEL_MPDDRC_MD_DDR3_SDRAM);
 
 	ddrc->cr = (ATMEL_MPDDRC_CR_NC_COL_10 |
 		    ATMEL_MPDDRC_CR_NR_ROW_14 |
