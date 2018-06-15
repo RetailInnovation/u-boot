@@ -28,12 +28,17 @@
 
 #ifdef CONFIG_SD_BOOT
 
+#undef  CONFIG_BOOTARGS
+
+#define CONFIG_BOOTARGS	"console=ttyS0,115200 earlyprintk " \
+			"root=/dev/mmcblk0p2 " \
+			"rw rootwait"
+
 /* bootstrap + u-boot + env in sd card */
 #undef CONFIG_BOOTCOMMAND
 
-#define CONFIG_BOOTCOMMAND	"fatload mmc " CONFIG_ENV_FAT_DEVICE_AND_PART " 0x21000000 at91-sama5d2_xplained.dtb; " \
-				"fatload mmc " CONFIG_ENV_FAT_DEVICE_AND_PART " 0x22000000 zImage; " \
-				"bootz 0x22000000 - 0x21000000"
+#define CONFIG_BOOTCOMMAND	"fatload mmc " CONFIG_ENV_FAT_DEVICE_AND_PART " 0x21000000 fitImage; " \
+				"bootm 0x21000000"
 
 #elif CONFIG_SPI_BOOT
 
