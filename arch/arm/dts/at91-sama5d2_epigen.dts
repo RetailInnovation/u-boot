@@ -3,12 +3,12 @@
 #include "sama5d2-pinfunc.h"
 
 / {
-	model = "Atmel SAMA5D2 Xplained";
-	compatible = "atmel,sama5d2-xplained", "atmel,sama5d2", "atmel,sama5";
+	model = "Retail Innovation SAMA5D2 Epigen";
+	compatible = "atmel,sama5d2-epigen", "atmel,sama5d2", "atmel,sama5";
 
 	chosen {
 		u-boot,dm-pre-reloc;
-		stdout-path = &uart1;
+		stdout-path = &uart2;
 	};
 
 	ahb {
@@ -41,55 +41,6 @@
 		};
 
 		apb {
-			hlcdc: hlcdc@f0000000 {
-				atmel,vl-bpix = <4>;
-				atmel,guard-time = <1>;
-				pinctrl-names = "default";
-				pinctrl-0 = <&pinctrl_lcd_base &pinctrl_lcd_pwm &pinctrl_lcd_rgb666>;
-				status = "okay";
-				u-boot,dm-pre-reloc;
-
-				display-timings {
-					u-boot,dm-pre-reloc;
-					480x272 {
-						clock-frequency = <9000000>;
-						hactive = <480>;
-						vactive = <272>;
-						hsync-len = <41>;
-						hfront-porch = <2>;
-						hback-porch = <2>;
-						vfront-porch = <2>;
-						vback-porch = <2>;
-						vsync-len = <11>;
-						u-boot,dm-pre-reloc;
-					};
-				};
-			};
-
-			qspi0: spi@f0020000 {
-				status = "okay";
-
-				flash@0 {
-					compatible = "atmel,sama5d2-qspi-flash";
-					reg = <0>;
-					#address-cells = <1>;
-					#size-cells = <1>;
-					pinctrl-names = "default";
-					pinctrl-0 = <&pinctrl_qspi0_default>;
-					spi-max-frequency = <83000000>;
-
-					partition@00000000 {
-						label = "boot";
-						reg = <0x00000000 0x00c00000>;
-					};
-
-					partition@00c00000 {
-						label = "rootfs";
-						reg = <0x00c00000 0x00000000>;
-					};
-				};
-			};
-
 			spi0: spi@f8000000 {
 				cs-gpios = <&pioA 17 0>, <0>, <0>, <0>;
 				pinctrl-names = "default";
@@ -123,15 +74,24 @@
 				u-boot,dm-pre-reloc;
 			};
 
+			uart2: serial@f8024000 {
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_uart2_default>;
+				status = "okay";
+				u-boot,dm-pre-reloc;
+			};
+
+			uart4: serial@fc00c000 {
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_uart4_default>;
+				status = "okay";
+				u-boot,dm-pre-reloc;
+			};
+
 			i2c1: i2c@fc028000 {
 				pinctrl-names = "default";
 				pinctrl-0 = <&pinctrl_i2c1_default>;
 				status = "okay";
-
-				i2c_eeprom: i2c_eeprom@5c {
-					compatible = "atmel,24mac402";
-					reg = <0x5c>;
-				};
 			};
 
 			pioA: gpio@fc038000 {
@@ -139,41 +99,6 @@
 					pinctrl_i2c1_default: i2c1_default {
 						pinmux = <PIN_PD4__TWD1>,
 							 <PIN_PD5__TWCK1>;
-						bias-disable;
-					};
-
-					pinctrl_lcd_base: pinctrl_lcd_base {
-						pinmux = <PIN_PC30__LCDVSYNC>,
-							<PIN_PC31__LCDHSYNC>,
-							<PIN_PD1__LCDDEN>,
-							<PIN_PD0__LCDPCK>;
-						bias-disable;
-					};
-
-					pinctrl_lcd_pwm: pinctrl_lcd_pwm {
-						pinmux = <PIN_PC28__LCDPWM>;
-						bias-disable;
-					};
-
-					pinctrl_lcd_rgb666: pinctrl_lcd_rgb666 {
-						pinmux = <PIN_PC10__LCDDAT2>,
-							<PIN_PC11__LCDDAT3>,
-							<PIN_PC12__LCDDAT4>,
-							<PIN_PC13__LCDDAT5>,
-							<PIN_PC14__LCDDAT6>,
-							<PIN_PC15__LCDDAT7>,
-							<PIN_PC16__LCDDAT10>,
-							<PIN_PC17__LCDDAT11>,
-							<PIN_PC18__LCDDAT12>,
-							<PIN_PC19__LCDDAT13>,
-							<PIN_PC20__LCDDAT14>,
-							<PIN_PC21__LCDDAT15>,
-							<PIN_PC22__LCDDAT18>,
-							<PIN_PC23__LCDDAT19>,
-							<PIN_PC24__LCDDAT20>,
-							<PIN_PC25__LCDDAT21>,
-							<PIN_PC26__LCDDAT22>,
-							<PIN_PC27__LCDDAT23>;
 						bias-disable;
 					};
 
@@ -193,16 +118,6 @@
 							 <PIN_PB21__GTX1>,
 							 <PIN_PB22__GMDC>,
 							 <PIN_PB23__GMDIO>;
-						bias-disable;
-					};
-
-					pinctrl_qspi0_default: qspi0_default {
-						pinmux = <PIN_PA22__QSPI0_SCK>,
-							 <PIN_PA23__QSPI0_CS>,
-							 <PIN_PA24__QSPI0_IO0>,
-							 <PIN_PA25__QSPI0_IO1>,
-							 <PIN_PA26__QSPI0_IO2>,
-							 <PIN_PA27__QSPI0_IO3>;
 						bias-disable;
 					};
 
@@ -249,7 +164,9 @@
 					pinctrl_spi0_default: spi0_default {
 						pinmux = <PIN_PA14__SPI0_SPCK>,
 							 <PIN_PA15__SPI0_MOSI>,
-							 <PIN_PA16__SPI0_MISO>;
+							 <PIN_PA16__SPI0_MISO>,
+							 <PIN_PA17__SPI0_NPCS0>,
+							 <PIN_PA27__SPI0_NPCS2>;
 						bias-disable;
 						u-boot,dm-pre-reloc;
 					};
@@ -257,6 +174,20 @@
 					pinctrl_uart1_default: uart1_default {
 						pinmux = <PIN_PD2__URXD1>,
 							 <PIN_PD3__UTXD1>;
+						bias-disable;
+						u-boot,dm-pre-reloc;
+					};
+
+					pinctrl_uart2_default: uart2_default {
+						pinmux = <PIN_PD23__URXD2>,
+							 <PIN_PD24__UTXD2>;
+						bias-disable;
+						u-boot,dm-pre-reloc;
+					};
+
+					pinctrl_uart4_default: uart4_default {
+						pinmux = <PIN_PB3__URXD4>,
+							 <PIN_PB4__UTXD4>;
 						bias-disable;
 						u-boot,dm-pre-reloc;
 					};
