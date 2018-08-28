@@ -1,0 +1,15 @@
+if TARGET_SAMA5D2_EPIGEN
+
+config SYS_BOARD
+	default "sama5d2_epigen"
+
+config SYS_VENDOR
+	default "RetailInnovation"
+
+config SYS_SOC
+	default "at91"
+
+config SYS_CONFIG_NAME
+	default "sama5d2_epigen"
+
+endif

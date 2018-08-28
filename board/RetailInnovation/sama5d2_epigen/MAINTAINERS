@@ -1,0 +1,6 @@
+SAMA5D2 Epigen
+M:	Jonas Bonn <jonas.bonn@gmail.com>
+S:	Maintained
+F:	board/RetailInnovation/sama5d2_epigen/
+F:	include/configs/sama5d2_epigen.h
+F:	configs/sama5d2_epigen_defconfig

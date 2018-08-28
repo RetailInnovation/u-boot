@@ -699,6 +699,9 @@ dtb-$(CONFIG_TARGET_SAMA5D2_PTC_EK) += \
 dtb-$(CONFIG_TARGET_SAMA5D2_XPLAINED) += \
 	at91-sama5d2_xplained.dtb
 
+dtb-$(CONFIG_TARGET_SAMA5D2_EPIGEN) += \
+	at91-sama5d2_epigen.dtb
+
 dtb-$(CONFIG_TARGET_SAMA5D27_SOM1_EK) += \
 	at91-sama5d27_som1_ek.dtb
 

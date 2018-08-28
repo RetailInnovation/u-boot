@@ -191,6 +191,13 @@ config TARGET_SAMA5D2_ICP
 	  a 64Mbit QSPI flash, 3xMikrobus connectors, 4xUSB ,
 	  EtherCat and WILC3000 devices on board.
 
+config TARGET_SAMA5D2_EPIGEN
+	bool "SAMA5D2 Epigen (Retail Innovation) board"
+	select SAMA5D2
+	select SUPPORT_SPL
+	select BOARD_EARLY_INIT_F
+	select BOARD_LATE_INIT
+
 config TARGET_SAMA5D3_XPLAINED
 	bool "SAMA5D3 Xplained board"
 	select BOARD_EARLY_INIT_F
@@ -305,6 +312,7 @@ source "board/esd/meesc/Kconfig"
 source "board/gardena/smart-gateway-at91sam/Kconfig"
 source "board/l+g/vinco/Kconfig"
 source "board/mini-box/picosam9g45/Kconfig"
+source "board/RetailInnovation/sama5d2_epigen/Kconfig"
 source "board/ronetix/pm9261/Kconfig"
 source "board/ronetix/pm9263/Kconfig"
 source "board/ronetix/pm9g45/Kconfig"
