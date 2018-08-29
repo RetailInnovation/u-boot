@@ -8,7 +8,7 @@
 
 	chosen {
 		u-boot,dm-pre-reloc;
-		stdout-path = &uart2;
+		stdout-path = &uart4;
 	};
 
 	ahb {
