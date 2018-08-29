@@ -329,6 +329,7 @@
 						#clock-cells = <0>;
 						reg = <28>;
 						atmel,clk-output-range = <0 83000000>;
+						u-boot,dm-pre-reloc;
 					};
 
 					twi0_clk: twi0_clk@29 {
