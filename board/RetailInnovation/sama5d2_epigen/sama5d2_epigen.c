@@ -36,7 +36,7 @@ int board_late_init(void)
 #ifdef CONFIG_DEBUG_UART_BOARD_INIT
 static void board_uart4_hw_init(void)
 {
-	atmel_pio4_set_a_periph(AT91_PIO_PORTB, 3, 1);	/* URXD1 */
+	atmel_pio4_set_a_periph(AT91_PIO_PORTB, 3, ATMEL_PIO_PUEN_MASK); /* URXD1 */
 	atmel_pio4_set_a_periph(AT91_PIO_PORTB, 4, 0);	/* UTXD1 */
 
 	at91_periph_clk_enable(ATMEL_ID_UART4);
