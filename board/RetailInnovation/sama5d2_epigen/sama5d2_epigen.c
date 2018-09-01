@@ -6,6 +6,9 @@
  */
 
 #include <common.h>
+#include <dm.h>
+#include <environment.h>
+#include <i2c_eeprom.h>
 #include <debug_uart.h>
 #include <asm/io.h>
 #include <asm/arch/at91_common.h>
@@ -17,6 +20,31 @@
 #include <asm/arch/sama5d2.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+int set_ethaddr(int offset)
+{
+	const int ETH_ADDR_LEN = 6;
+	unsigned char ethaddr[ETH_ADDR_LEN];
+	const char *ETHADDR_NAME = "ethaddr";
+	struct udevice *dev;
+	int ret;
+
+	if (env_get(ETHADDR_NAME))
+		return 0;
+
+	ret = uclass_first_device_err(UCLASS_I2C_EEPROM, &dev);
+	if (ret)
+		return ret;
+
+	ret = i2c_eeprom_read(dev, offset, ethaddr, 6);
+	if (ret)
+		return ret;
+
+	if (is_valid_ethaddr(ethaddr))
+		eth_env_set_enetaddr(ETHADDR_NAME, ethaddr);
+
+	return 0;
+}
 
 static void board_usb_hw_init(void)
 {
@@ -84,7 +112,7 @@ int dram_init(void)
 int misc_init_r(void)
 {
 #ifdef CONFIG_I2C_EEPROM
-	at91_set_ethaddr(AT24MAC_MAC_OFFSET);
+	set_ethaddr(AT24MAC_MAC_OFFSET);
 #endif
 
 	return 0;
