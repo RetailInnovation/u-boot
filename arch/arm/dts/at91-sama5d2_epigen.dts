@@ -81,6 +81,10 @@
 				u-boot,dm-pre-reloc;
 			};
 
+			watchdog@f8048040 {
+				status = "okay";
+			};
+
 			uart4: serial@fc00c000 {
 				pinctrl-names = "default";
 				pinctrl-0 = <&pinctrl_uart4_default>;
