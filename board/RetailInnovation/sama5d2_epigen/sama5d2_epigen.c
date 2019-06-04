@@ -23,41 +23,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#define AT24MAC_ADDR 0x5C
-#define AT24MAC_REG 0x9a
-
-static int set_ethaddr_from_eeprom(void)
-{
-	const int ETH_ADDR_LEN = 6;
-	unsigned char ethaddr[ETH_ADDR_LEN];
-	const char *ETHADDR_NAME = "ethaddr";
-	struct udevice *bus, *dev;
-
-	if (env_get(ETHADDR_NAME))
-		return 0;
-
-	if (uclass_get_device_by_seq(UCLASS_I2C, 1, &bus)) {
-		printf("Cannot find I2C bus 1\n");
-		return -1;
-	}
-
-	if (dm_i2c_probe(bus, AT24MAC_ADDR, 0, &dev)) {
-		printf("Failed to probe I2C chip\n");
-		return -1;
-	}
-
-	if (dm_i2c_read(dev, AT24MAC_REG, ethaddr, ETH_ADDR_LEN)) {
-		printf("Failed to read ethernet address from EEPROM\n");
-		return -1;
-	}
-
-	if (!is_valid_ethaddr(ethaddr)) {
-		printf("The ethernet address read from EEPROM is not valid!\n");
-		return -1;
-	}
-
-	return eth_env_set_enetaddr(ETHADDR_NAME, ethaddr);
-}
+#define AT24MAC_OFFSET 0x9a
 
 static int set_ethaddr(int offset)
 {
@@ -158,8 +124,7 @@ int dram_init(void)
 int misc_init_r(void)
 {
 #ifdef CONFIG_I2C_EEPROM
-	set_ethaddr_from_eeprom();
-//	set_ethaddr(AT24MAC_MAC_OFFSET);
+	set_ethaddr(AT24MAC_MAC_OFFSET);
 #endif
 
 	return 0;
