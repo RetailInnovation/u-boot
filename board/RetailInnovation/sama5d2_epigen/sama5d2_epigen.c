@@ -34,24 +34,20 @@ static int set_ethaddr(int offset)
 	int ret;
 
 	if (env_get(ETHADDR_NAME)) {
-		printf("Jonas a\n");
 		return 0;
 	}
 
 	ret = uclass_first_device_err(UCLASS_I2C_EEPROM, &dev);
 	if (ret) {
-		printf("Jonas b\n");
 		return ret;
 	}
 
 	ret = i2c_eeprom_read(dev, offset, ethaddr, 6);
 	if (ret) {
-		printf("Jonas c\n");
 		return ret;
 	}
 
 	if (is_valid_ethaddr(ethaddr)) {
-		printf("Jonas d\n");
 		eth_env_set_enetaddr(ETHADDR_NAME, ethaddr);
 	}
 
